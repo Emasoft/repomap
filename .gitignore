@@ -2,9 +2,10 @@
 # Exclude packaged modules
 *.zip
 
-### Aider
+### Aider and RepoMap cache
 .aider*
 .aider
+.aider.tags.cache*
 
 ### Git
 .git
