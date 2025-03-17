@@ -359,7 +359,10 @@ class RepoMap:
 
         # Default personalization for unspecified files is 1/num_nodes
         # https://networkx.org/documentation/stable/_modules/networkx/algorithms/link_analysis/pagerank_alg.html#pagerank
-        personalize = 100 / len(fnames)
+        if fnames:
+            personalize = 100 / len(fnames)
+        else:
+            personalize = 0.0
 
         try:
             cache_size = len(self.TAGS_CACHE)
