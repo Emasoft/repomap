@@ -37,7 +37,7 @@ if USING_TSL_PACK:
 
 
 class RepoMap:
-    TAGS_CACHE_DIR = f".aider.tags.cache.v{CACHE_VERSION}"
+    TAGS_CACHE_DIR = f".repomap.tags.cache.v{CACHE_VERSION}"
 
     warned_files = set()
 
