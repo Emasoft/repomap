@@ -2,9 +2,9 @@ name: Python CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ master, release ]
 
 jobs:
   test:
@@ -59,7 +59,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
     
     steps:
     - uses: actions/checkout@v4

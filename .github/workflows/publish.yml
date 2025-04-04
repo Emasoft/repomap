@@ -93,4 +93,4 @@ jobs:
       - name: Push changes (if workflow_dispatch)
         if: github.event_name == 'workflow_dispatch' && success()
         run: |
-          git push origin HEAD:main --tags
+          git push origin HEAD:master --tags
