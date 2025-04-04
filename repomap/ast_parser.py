@@ -67,7 +67,8 @@ def extract_line_range(
     context_start = max(0, start_line - context_lines)
     context_end = min(len(source_lines), end_line + context_lines)
     
-    # Extract the lines
+    # Extract the lines, including full lines from the source
+    # This ensures we get all context including properties, decorators, etc.
     code_lines = source_lines[context_start:context_end]
     
     # Convert back to 1-based indexing for return values
@@ -110,6 +111,16 @@ def find_nodes(
     # Find callable objects (functions, methods, classes)
     callable_types = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
     
+    # Helper to check for decorators and adjust line numbers
+    def get_decorator_line(node):
+        # If the node has decorators, adjust line numbers to include them
+        if hasattr(node, 'decorator_list') and node.decorator_list:
+            # Find the first decorator's line number
+            first_decorator = node.decorator_list[0]
+            if hasattr(first_decorator, 'lineno'):
+                return first_decorator.lineno
+        return getattr(node, 'lineno', 0)
+    
     # Process all nodes in the AST
     for node in ast.walk(module_node):
         node_info = None
@@ -117,10 +128,15 @@ def find_nodes(
         # Handle callables
         if isinstance(node, callable_types):
             if match_name_pattern(node.name, name_pattern):
+                # Get line number adjusting for decorators
+                start_line = get_decorator_line(node)
+                original_lineno = getattr(node, 'lineno', 0)
+                
                 node_info = {
                     'name': node.name,
                     'type': node.__class__.__name__,
-                    'lineno': getattr(node, 'lineno', 0),
+                    'lineno': start_line,
+                    'original_lineno': original_lineno,  # Save the original line number before decorator adjustment
                     'end_lineno': getattr(node, 'end_lineno', 0),
                     'is_callable': True,
                 }
@@ -213,6 +229,62 @@ def find_nodes(
     return result
 
 
+def extract_signature(
+    node: Dict[str, Any],
+    source_lines: List[str]
+) -> Tuple[int, int, List[str]]:
+    """
+    Extract the signature of a callable element including any decorators.
+    
+    Args:
+        node: Dictionary with node information
+        source_lines: Source code lines
+        
+    Returns:
+        Tuple of (start_line, end_line, signature_lines)
+    """
+    # Get the decorator line number (1-based) and the function/class def line (1-based)
+    start_line = node['lineno']  # This is the decorator line if present
+    
+    # Check if we have original line number (needed for decorated functions)
+    if 'original_lineno' in node:
+        func_line = node['original_lineno']  # Line where the actual function/class def is
+    else:
+        func_line = start_line  # Same as start if no decorator
+    
+    # Convert to 0-based for array access
+    code_start = start_line - 1
+    func_line_idx = func_line - 1
+    
+    # Ensure we include the function definition line
+    # Some functions might have decorator-adjusted lineno but no decorators in source
+    # (happens in some test cases)
+    if func_line_idx < len(source_lines) and 'def ' in source_lines[func_line_idx]:
+        # For callables, include up to the docstring if present
+        docstring_line_idx = func_line_idx + 1
+        include_docstring = False
+        
+        if docstring_line_idx < len(source_lines):
+            docstring_line = source_lines[docstring_line_idx]
+            if docstring_line.strip().startswith('"""') or docstring_line.strip().startswith("'''"):
+                include_docstring = True
+                end_line_idx = docstring_line_idx + 1
+            else:
+                end_line_idx = func_line_idx + 1
+        else:
+            end_line_idx = func_line_idx + 1
+            
+        # Make sure to include from decorator to function def
+        signature_lines = source_lines[code_start:end_line_idx]
+        end_line = end_line_idx + 1  # Convert back to 1-based
+    else:
+        # Just return the line itself
+        signature_lines = source_lines[code_start:code_start + 1]
+        end_line = code_start + 2  # +1 for exclusive range, +1 for 1-based
+    
+    return (start_line, end_line, signature_lines)
+
+
 def format_code_with_line_numbers(
     code_lines: List[str], 
     start_line: int,
@@ -253,6 +325,7 @@ def process_file(
     include_non_callables: bool = False,
     add_context: int = 0,
     add_line_numbers: bool = False,
+    signature_only: bool = False,
     feature_version: Tuple[int, int] = (3, 10)
 ) -> Dict[str, Any]:
     """
@@ -266,6 +339,7 @@ def process_file(
         include_non_callables: Include non-callable nodes like variables
         add_context: Number of context lines to include before and after
         add_line_numbers: Whether to add line numbers to the output
+        signature_only: Only return the signature line (with decorators) of callable elements
         feature_version: Python feature version to use for parsing
         
     Returns:
@@ -307,7 +381,28 @@ def process_file(
         node_type = node.get('type', 'Unknown')
         
         # Handle different output formats
-        if get_code:
+        if signature_only and node.get('is_callable', True):
+            # Extract just the signature including decorators
+            sig_start, sig_end, sig_lines = extract_signature(
+                node, 
+                source_lines
+            )
+            
+            # Format with line numbers if requested
+            formatted_signature = format_code_with_line_numbers(
+                sig_lines, 
+                sig_start,
+                add_line_numbers=add_line_numbers
+            )
+            
+            result_entry = {
+                'name': node_name,
+                'type': node_type,
+                'start_line': sig_start,
+                'end_line': sig_end,
+                'code': formatted_signature
+            }
+        elif get_code:
             # Extract code including context if requested
             code_start, code_end, code_lines = extract_line_range(
                 node,  # Use the node object directly 
@@ -355,7 +450,12 @@ def process_file(
     return {'results': results, 'filename': filename}
 
 
-def print_results(results: Dict[str, Any], line_numbers_only: bool = False, get_code: bool = False) -> None:
+def print_results(
+    results: Dict[str, Any], 
+    line_numbers_only: bool = False, 
+    get_code: bool = False,
+    signature_only: bool = False
+) -> None:
     """Print results in a structured format."""
     if 'error' in results:
         print(results['error'])
@@ -368,7 +468,7 @@ def print_results(results: Dict[str, Any], line_numbers_only: bool = False, get_
     nodes = results['results']
     
     # Different output formats based on options
-    if get_code:
+    if get_code or signature_only:
         for node in nodes:
             print(f"// {node['name']} ({node['type']}, lines {node['start_line']}-{node['end_line']}):")
             print(node['code'])
@@ -409,6 +509,9 @@ Examples:
   Find all elements (callable and non-callable) with 5 lines of context:
     ast_parser.py myfile.py "*" --non-callables --get-code --add-context 5
   
+  Get only function/class signatures including decorators:
+    ast_parser.py myfile.py "*" --signature-only
+  
   Get a compact listing of all callable elements:
     ast_parser.py myfile.py "*" --line-numbers-only
 """
@@ -426,11 +529,14 @@ Examples:
     parser.add_argument('--get-code', action='store_true',
                       help='Extract and print the source code of matching elements')
     
+    parser.add_argument('--signature-only', action='store_true',
+                      help='Only extract and print the signature (with decorators) of callable elements')
+    
     parser.add_argument('--add-context', nargs='?', type=int, const=10, metavar='LINES',
                       help='Add context lines before and after (default: 10 if flag used without value)')
     
     parser.add_argument('--add-line-numbers', action='store_true',
-                      help='Add line numbers to extracted code (only with --get-code)')
+                      help='Add line numbers to extracted code (works with --get-code and --signature-only)')
     
     parser.add_argument('--version', type=str, default='3.10',
                       help='Python language version to use for parsing (e.g., 3.9, 3.10)')
@@ -445,7 +551,7 @@ Examples:
         print(f"Invalid version format: {args.version}. Using default (3.10).", file=sys.stderr)
         feature_version = (3, 10)
     
-    # Handle context lines
+    # Handle context lines - applies only to get_code, not signature_only
     add_context = args.add_context if args.get_code and args.add_context is not None else 0
     
     # Process the file
@@ -456,12 +562,18 @@ Examples:
         line_numbers_only=args.line_numbers_only,
         include_non_callables=args.non_callables,
         add_context=add_context,
-        add_line_numbers=args.add_line_numbers and args.get_code,
+        add_line_numbers=args.add_line_numbers and (args.get_code or args.signature_only),
+        signature_only=args.signature_only,
         feature_version=feature_version
     )
     
     # Print results
-    print_results(results, args.line_numbers_only, args.get_code)
+    print_results(
+        results, 
+        args.line_numbers_only, 
+        args.get_code,
+        args.signature_only
+    )
     
     # For compatibility with older scripts
     if len(sys.argv) > 2 and sys.argv[2] != "*":
