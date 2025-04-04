@@ -1281,3 +1281,14 @@ test_infrastructure_status.md
 # Generated test output files
 repomap/output/repomap_tmp*
 
+# Personal files that shouldn't be published
+CLAUDE.md
+.design/
+.DS_Store
+.env
+
+# API Keys and sensitive information
+.env*
+*config*.json
+*token*
+
