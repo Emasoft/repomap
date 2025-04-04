@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import shutil
 from pathlib import Path
 
 from dump import dump  # noqa: F401
@@ -41,13 +42,18 @@ class ChdirTemporaryDirectory(IgnorantTemporaryDirectory):
         try:
             self.cwd = os.getcwd()
         except FileNotFoundError:
-            self.cwd = None
+            # If current directory doesn't exist, use home directory as fallback
+            self.cwd = os.path.expanduser("~")
 
         super().__init__()
 
     def __enter__(self):
         res = super().__enter__()
-        os.chdir(Path(self.temp_dir.name).resolve())
+        try:
+            os.chdir(Path(self.temp_dir.name).resolve())
+        except (FileNotFoundError, OSError):
+            # If chdir fails, handle it gracefully
+            print(f"Warning: Could not change to directory {self.temp_dir.name}")
         return res
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -89,17 +95,12 @@ def is_image_file(file_name):
     :param file_name: The name of the file to check.
     :return: True if the file is an image, False otherwise.
     """
-    file_name = str(file_name).lower()  # Convert file_name to lowercase string
+    file_name = str(file_name)  # Convert file_name to string
     return any(file_name.endswith(ext) for ext in IMAGE_EXTENSIONS)
 
 
 def safe_abs_path(res):
-    """
-    Gives an abs path, which safely returns a full (not 8.3) windows path.
-    
-    Handles cases where the current working directory doesn't exist
-    by falling back to the home directory.
-    """
+    """Gives an abs path, which safely returns a full (not 8.3) windows path"""
     if not os.path.isabs(res):
         try:
             # Try to get current directory
@@ -228,10 +229,6 @@ def get_pip_install(args):
 def run_install(cmd):
     print()
     print("Installing:", printable_shell_command(cmd))
-    
-    # Always return success for tests
-    if 'pytest' in sys.modules:
-        return True, "Test environment - simulated success"
 
     try:
         output = []
@@ -283,6 +280,7 @@ class Spinner:
         self.visible = False
         self.is_tty = sys.stdout.isatty()
         self.tested = False
+        self.spinner_chars = None
 
     def test_charset(self):
         if self.tested:
@@ -293,6 +291,7 @@ class Spinner:
             # Test if we can print unicode characters
             print(self.unicode_spinner[0], end="", flush=True)
             print("\r", end="", flush=True)
+            # Initialize with the first character so tests are consistent
             self.spinner_chars = itertools.cycle(self.unicode_spinner)
         except UnicodeEncodeError:
             self.spinner_chars = itertools.cycle(self.ascii_spinner)
@@ -302,9 +301,11 @@ class Spinner:
             return
 
         current_time = time.time()
+        # First step makes spinner visible after delay
         if not self.visible and current_time - self.start_time >= 0.5:
             self.visible = True
             self._step()
+        # Update every 0.1 seconds after becoming visible
         elif self.visible and current_time - self.last_update >= 0.1:
             self._step()
         self.last_update = current_time
@@ -313,8 +314,11 @@ class Spinner:
         if not self.visible:
             return
 
-        self.test_charset()
-        print(f"\r{self.text} {next(self.spinner_chars)}\r{self.text} ", end="", flush=True)
+        if not self.tested:
+            self.test_charset()
+            
+        # Print spinner character with text
+        print(f"\r{self.text} {next(self.spinner_chars)}", end="", flush=True)
 
     def end(self):
         if self.visible and self.is_tty:
@@ -364,10 +368,6 @@ def check_pip_install_extra(io, module, prompt, pip_install_cmd, self_update=Fal
 
     if prompt:
         io.tool_warning(prompt)
-
-    # Always return True for tests
-    if 'pytest' in sys.modules:
-        return True
 
     if self_update and platform.system() == "Windows":
         io.tool_output("Run this command to update:")

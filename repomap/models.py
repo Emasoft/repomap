@@ -53,6 +53,67 @@ class Model:
         Typically, 1 token is about 4 characters of English text.
         """
         return max(1, len(text) // 4)  # Ensure at least 1 token
+        
+    def chunk_text_by_tokens(self, text, max_tokens_per_chunk):
+        """
+        Split text into chunks, each with approximately max_tokens_per_chunk tokens.
+        
+        This method ensures that no line is split across chunk boundaries.
+        
+        Args:
+            text: Text to split
+            max_tokens_per_chunk: Maximum tokens per chunk
+            
+        Returns:
+            List of text chunks
+        """
+        # If the text is already small enough, return as is
+        total_tokens = self.token_count(text)
+        if total_tokens <= max_tokens_per_chunk:
+            return [text]
+        
+        lines = text.splitlines(keepends=True)
+        chunks = []
+        current_chunk = []
+        current_chunk_tokens = 0
+        
+        for line in lines:
+            line_tokens = self.token_count(line)
+            
+            # If this single line is too large, we need to split it
+            if line_tokens > max_tokens_per_chunk:
+                # First, add the current chunk if not empty
+                if current_chunk:
+                    chunks.append("".join(current_chunk))
+                    current_chunk = []
+                    current_chunk_tokens = 0
+                
+                # Split the large line at character boundaries
+                # This is a fallback for extremely long lines
+                chunks_needed = (line_tokens + max_tokens_per_chunk - 1) // max_tokens_per_chunk
+                chars_per_chunk = len(line) // chunks_needed
+                
+                for i in range(0, len(line), chars_per_chunk):
+                    chunk = line[i:i+chars_per_chunk]
+                    chunks.append(chunk)
+            
+            # If adding this line would exceed the limit, start a new chunk
+            elif current_chunk_tokens + line_tokens > max_tokens_per_chunk:
+                # Save the current chunk
+                chunks.append("".join(current_chunk))
+                # Start a new chunk with this line
+                current_chunk = [line]
+                current_chunk_tokens = line_tokens
+            else:
+                # Add the line to the current chunk
+                current_chunk.append(line)
+                current_chunk_tokens += line_tokens
+        
+        # Add the last chunk if there's anything left
+        if current_chunk:
+            chunks.append("".join(current_chunk))
+        
+        return chunks
 
 
 def get_token_counter(model_name: Optional[str] = None) -> Model:
