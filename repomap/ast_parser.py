@@ -211,20 +211,35 @@ def generic_parse(file_path, language):
         return []
 
 if __name__ == "__main__":
-    # Simple CLI interface
+    # CLI interface compatible with section_splitting.py
     if len(sys.argv) < 2:
-        print("Usage: ast_parser.py <file_path> [language]", file=sys.stderr)
+        print("Usage: ast_parser.py <file_path> [function_name]", file=sys.stderr)
         sys.exit(1)
     
     file_path = sys.argv[1]
-    language = sys.argv[2] if len(sys.argv) > 2 else None
+    function_name = sys.argv[2] if len(sys.argv) > 2 else None
     
-    # If language not specified, try to infer from file extension
-    if not language:
-        _, ext = os.path.splitext(file_path)
-        language = ext
+    # Infer language from file extension
+    _, ext = os.path.splitext(file_path)
+    language = ext
     
+    # Parse file
     elements = parse_file(file_path, language)
     
-    # Print elements as JSON
-    print(json.dumps(elements, indent=2))
+    # If a specific function/class name was provided, filter for it
+    if function_name:
+        for element in elements:
+            if element['name'] == function_name:
+                # Format output for section_splitting.py
+                start_line = element.get('line', element.get('start_line', 0))
+                end_line = element.get('end_line', start_line + 5)
+                print(f"Found Callable '{function_name}' at lines {start_line}-{end_line}")
+                sys.exit(0)
+        
+        # If we didn't find the element
+        print(f"Callable '{function_name}' not found")
+        sys.exit(1)
+    else:
+        # If no specific name was provided, print all elements as JSON
+        print(json.dumps(elements, indent=2))
+        sys.exit(0)

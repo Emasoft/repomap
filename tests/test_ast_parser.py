@@ -107,19 +107,45 @@ def standalone_function():
         """Test parse_file with JavaScript."""
         elements = parse_file(self.temp_js_file.name, 'javascript')
         self.assertGreater(len(elements), 0)
-        self.assertIn('TestClass', [e['name'] for e in elements])
+        element_names = [e['name'] for e in elements]
+        self.assertIn('TestClass', element_names)
+        # Verify the element has the required attributes needed by section_splitting.py
+        for element in elements:
+            if element['name'] == 'TestClass':
+                self.assertTrue('line' in element or 'start_line' in element)
     
     def test_parse_file_py(self):
         """Test parse_file with Python."""
         elements = parse_file(self.temp_py_file.name, 'python')
         self.assertGreater(len(elements), 0)
-        self.assertIn('TestClass', [e['name'] for e in elements])
+        element_names = [e['name'] for e in elements]
+        self.assertIn('TestClass', element_names)
+        # Verify the element has the required attributes needed by section_splitting.py
+        for element in elements:
+            if element['name'] == 'TestClass':
+                self.assertTrue('line' in element or 'start_line' in element)
     
     def test_parse_file_extension(self):
         """Test parse_file infers language from extension."""
         elements = parse_file(self.temp_js_file.name, '.js')
         self.assertGreater(len(elements), 0)
         self.assertIn('TestClass', [e['name'] for e in elements])
+        
+    def test_cli_interface(self):
+        """Test the CLI interface with specific function names."""
+        import subprocess
+        
+        # Test with a specific function name
+        cmd = [sys.executable, self.temp_py_file.name, "TestClass"]
+        result = subprocess.run(
+            [sys.executable, os.path.join(Path(__file__).parent.parent, "repomap", "ast_parser.py"), 
+             self.temp_py_file.name, "TestClass"],
+            capture_output=True, text=True
+        )
+        
+        # Check if the output matches what section_splitting.py expects
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("Found Callable 'TestClass' at lines", result.stdout)
 
 
 if __name__ == "__main__":
