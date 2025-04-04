@@ -1,0 +1,84 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov ruff black mypy coverage
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .
+
+    - name: Install tree-sitter queries
+      run: |
+        python install_queries.py
+
+    - name: Lint with ruff
+      run: |
+        ruff check --ignore E203,E402,E501,E266,W505,F841,F842,F401,W293,I001,UP015,C901,W291 --fix .
+
+    - name: Lint with black
+      run: |
+        black --check .
+
+    - name: Type check with mypy
+      run: |
+        mypy --no-warn-unused-ignores --no-warn-unused-configs --no-warn-return-any --no-warn-unreachable repomap
+
+    - name: Test with pytest
+      run: |
+        python -m coverage run -m pytest tests/
+        coverage report --fail-under=40
+        coverage xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+        pip install -e .
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Verify package
+      run: |
+        python -m twine check dist/*
