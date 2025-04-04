@@ -85,7 +85,24 @@ repomap --help                   # Show all options
 ## Code Editing
 - If you need to examine or modify the code, create or move files and folders, prefer writing and executing quick python scripts to using shell command.
 - Write quick python scripts to do any task you need, since python is more reliable.
-- **IMPORTANT**: Always use the `repomap/ast_parser.py` script to determine the exact start and ending line of functions or classes you want to read or edit. First run it in signatures-only mode to list all elements in the source file, then use the name of the function/class to run it again in full mode to get the exact line numbers. This prevents errors caused by viewing random code sections and getting truncated functions or classes.
+- **IMPORTANT**: Always use the `repomap/ast_parser.py` script to determine the exact start and ending line of functions or classes you want to read or edit. This prevents errors caused by viewing random code sections and getting truncated functions or classes.
+- To use ast_parser effectively:
+  ```bash
+  # List all callable elements in a file with line numbers
+  python -m repomap.ast_parser path/to/file.py "*" --line-numbers-only
+  
+  # Get just the signature of a specific function (with decorators)
+  python -m repomap.ast_parser path/to/file.py function_name --signature-only
+  
+  # Get full source code of a specific function with context
+  python -m repomap.ast_parser path/to/file.py function_name --get-code --add-context
+  
+  # Get non-callable elements like variables
+  python -m repomap.ast_parser path/to/file.py "*" --non-callables
+  
+  # Add line numbers to extracted code
+  python -m repomap.ast_parser path/to/file.py function_name --get-code --add-line-numbers
+  ```
 - Always delete the quick python scripts you wrote after using them successfully to complete the task or step they were created for. Do not clutter the repo folder with useless temporary python scripts.
 - Be sure to commit to git often and revert back if you found that a change broke the working code or caused a regression.
 - Always make tests before writing new functions, working in a way similar to the Test-Driven-Development methodology. TTD is the optimal way to add new features or change the existing ones. If unittest is not enough, use pytest with fixtures.
@@ -138,6 +155,7 @@ coverage report
 - Helper utilities in utils.py (Spinner, temp directories, etc.)
 - Special file filtering in special.py
 - Debug utilities in dump.py
+- Code analysis tools in ast_parser.py (for extracting code elements)
 - Language queries in repomap/queries/tree-sitter-language-pack/
 - Tests in tests/ directory (unit, CLI, and integration tests)
 - Test data samples in tests/samples/
