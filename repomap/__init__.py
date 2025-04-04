@@ -39,7 +39,19 @@ def filename_to_lang(filename):
         '.h': 'c',
         '.cpp': 'cpp',
         '.hpp': 'cpp',
-        '.cs': 'csharp'
+        '.cs': 'csharp',
+        '.rs': 'rust',
+        '.go': 'go',
+        '.rb': 'ruby',
+        '.php': 'php',
+        '.sh': 'bash',
+        '.html': 'html',
+        '.css': 'css',
+        '.md': 'markdown',
+        '.json': 'json',
+        '.yml': 'yaml',
+        '.yaml': 'yaml',
+        '.xml': 'xml'
     }
     return ext_to_lang.get(ext)
 

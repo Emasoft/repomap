@@ -12,6 +12,7 @@ from pathlib import Path
 # Make sure we can import the main package
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from repomap import RepoMap, get_scm_fname, filename_to_lang
+from repomap.modules.file_utils import get_rel_fname
 
 # Define test constants
 SAMPLES_DIR = Path(__file__).parent.parent / "samples"
@@ -97,7 +98,7 @@ def test_query_file_finding():
     # We know Python should have a query file
     python_query = get_scm_fname("python")
     assert python_query is not None
-    assert python_query.exists()
+    assert os.path.exists(python_query)
 
     # Check if we can find some other common languages
     # These might not exist depending on installation
@@ -123,11 +124,11 @@ def test_get_rel_fname(repomap_fixture):
     # Use Path objects to handle platform-specific paths
     root = Path(rm.root)
     test_file = root / "test.py"
-    assert rm.get_rel_fname(str(test_file)) == "test.py"
+    assert get_rel_fname(rm.root, str(test_file)) == "test.py"
 
     # Test with subdirectory
     subdir_file = root / "subdir" / "test.py"
-    assert rm.get_rel_fname(str(subdir_file)) == os.path.join("subdir", "test.py")
+    assert get_rel_fname(rm.root, str(subdir_file)) == os.path.join("subdir", "test.py")
 
 
 def test_get_tags_raw(repomap_fixture, monkeypatch):
