@@ -1,0 +1,42 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+include setup.py
+include setup.cfg
+
+# Include the query files
+recursive-include repomap/queries *.scm
+recursive-include queries *.scm
+
+# Include Python type hints
+include py.typed
+include repomap/py.typed
+
+# Exclude unnecessary files
+exclude .gitignore
+exclude .coveragerc
+exclude .DS_Store
+exclude *.pyc
+exclude __pycache__
+exclude repomap/__pycache__
+exclude *.bak
+exclude *.bak2
+exclude *.original_backup
+
+# Exclude temporary directories
+recursive-exclude textual *
+recursive-exclude tmp *
+recursive-exclude tmp_repos *
+recursive-exclude output *
+recursive-exclude coverage_html_report *
+
+# Exclude test files and directories
+exclude coverage_summary.md
+exclude test_infrastructure_status.md
+exclude test_results_*.md
+exclude run_coverage.sh
+exclude run_tests.py
+exclude lint.sh
+recursive-exclude tests *
+recursive-exclude test_files *

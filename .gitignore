@@ -7,7 +7,7 @@
 
 ### Git
 .git
-.git*
+.git-*
 
 # Exclude .NET assemblies from source
 *.dll
@@ -1262,7 +1262,22 @@ cython_debug/
 
 # RepoMap specific
 tmp/
+tmp_repos/
 textual/
 output/*
 !output/.gitkeep
+coverage_html_report/
+test_results_*.md
+
+# Temporary files
+*.bak
+*.bak2
+*.original_backup
+
+# Test clones and temporary repositories for testing
+coverage_summary.md
+test_infrastructure_status.md
+
+# Generated test output files
+repomap/output/repomap_tmp*
 

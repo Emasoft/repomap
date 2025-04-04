@@ -27,11 +27,16 @@ classifiers = [
 dependencies = [
     "diskcache>=5.6.3",
     "pygments>=2.15.1",
-    "tqdm>=4.67.1",
+    "tqdm>=4.67.1", 
     "networkx>=3.2.1",
     "importlib-resources>=6.0.0",
     "grep-ast>=0.1.0",
     "tree-sitter>=0.24.0",
+    "tree-sitter-language-pack>=0.6.0",
+    "tiktoken>=0.9.0",
+    "tokenizers>=0.21.0",
+    "typer>=0.15.2",
+    "pydantic",
 ]
 
 [project.urls]

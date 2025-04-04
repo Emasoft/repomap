@@ -1,0 +1,24 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Exclude test folders from language statistics
+tests/* linguist-vendored
+test_files/* linguist-vendored
+textual/* linguist-vendored
+tmp/* linguist-vendored
+tmp_repos/* linguist-vendored
+
+# Mark Python scripts as executable in git
+*.py text eol=lf
+setup_conda_env.sh text eol=lf
+lint.sh text eol=lf
+run_coverage.sh text eol=lf
+build_and_publish.sh text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
