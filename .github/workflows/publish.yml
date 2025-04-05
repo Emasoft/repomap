@@ -18,6 +18,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Increased timeout
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,12 +30,22 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
           
-      - name: Install dependencies
+      # Split the dependencies installation into multiple steps to avoid timeout issues
+      - name: Install pip and testing tools
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-cov coverage build twine bumpversion ruff mypy
+        timeout-minutes: 5
+          
+      - name: Install required packages
+        run: |
           pip install -r requirements.txt
+        timeout-minutes: 10
+        
+      - name: Install package in development mode
+        run: |
           pip install -e .
+        timeout-minutes: 3
           
       - name: Run tests and coverage
         run: |

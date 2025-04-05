@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Increased timeout
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11']
@@ -21,16 +22,27 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
-    - name: Install dependencies
+    # Split the dependencies installation into multiple steps to avoid timeout issues
+    - name: Install pip and testing tools
       run: |
         python -m pip install --upgrade pip
         pip install pytest pytest-cov ruff black mypy coverage
+      timeout-minutes: 5
+      
+    - name: Install required packages
+      run: |
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      timeout-minutes: 10
+      
+    - name: Install package in development mode
+      run: |
         pip install -e .
+      timeout-minutes: 3
 
     - name: Install tree-sitter queries
       run: |
         python install_queries.py
+      timeout-minutes: 3
 
     - name: Lint with ruff
       run: |
@@ -58,6 +70,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Increased timeout
     needs: test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
     
@@ -69,11 +82,17 @@ jobs:
         python-version: '3.9'
         cache: 'pip'
 
-    - name: Install dependencies
+    # Split the dependencies installation into multiple steps to avoid timeout issues
+    - name: Install pip and build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine
+      timeout-minutes: 5
+        
+    - name: Install package in development mode
+      run: |
         pip install -e .
+      timeout-minutes: 5
 
     - name: Build package
       run: |

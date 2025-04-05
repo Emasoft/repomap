@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Increased timeout
     strategy:
       matrix:
         python-version: [3.9, "3.10"]
@@ -19,13 +20,23 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        
-    - name: Install dependencies
+    
+    # Split the dependencies installation into multiple steps to avoid timeout issues
+    - name: Install pip and testing tools
       run: |
         python -m pip install --upgrade pip
         pip install pytest pytest-cov coverage ruff mypy build twine
+      timeout-minutes: 5
+        
+    - name: Install required packages
+      run: |
         pip install -r requirements.txt
+      timeout-minutes: 10
+      
+    - name: Install package in development mode
+      run: |
         pip install -e .
+      timeout-minutes: 3
         
     - name: Run tests with coverage
       run: |
