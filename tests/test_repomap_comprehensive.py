@@ -14,7 +14,7 @@ from collections import namedtuple
 # Add parent directory to path to import repomap
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from repomap import RepoMap, Tag, CACHE_VERSION
-from repomap.repomap import SQLITE_ERRORS
+from repomap.modules.config import SQLITE_ERRORS
 from repomap.io_utils import InputOutput
 import glob
 
@@ -75,6 +75,21 @@ def test_initialization(repomap_setup):
     assert rm.io == mock_io
     assert rm.verbose is False
     assert rm.max_map_tokens >= 4096  # Minimum token size enforcement
+    assert rm.skip_tests is False
+    assert rm.skip_docs is False
+    assert rm.skip_git is False
+    
+    # Test with skip options
+    rm_with_skips = RepoMap(
+        root=str(test_dir), 
+        io=mock_io,
+        skip_tests=True,
+        skip_docs=True,
+        skip_git=True
+    )
+    assert rm_with_skips.skip_tests is True
+    assert rm_with_skips.skip_docs is True
+    assert rm_with_skips.skip_git is True
 
 
 def test_glob_expansion(repomap_setup):

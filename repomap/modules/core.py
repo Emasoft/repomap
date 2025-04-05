@@ -43,6 +43,9 @@ class RepoMap:
         verbose=False,
         debug=False,
         disable_splitting=False,
+        skip_tests=False,
+        skip_docs=False,
+        skip_git=False,
     ):
         """
         Initialize a RepoMap instance.
@@ -56,6 +59,9 @@ class RepoMap:
             verbose: Whether to show verbose output
             debug: Whether to show debug information
             disable_splitting: Whether to disable map splitting
+            skip_tests: Whether to skip test files and directories
+            skip_docs: Whether to skip documentation files
+            skip_git: Whether to skip git-related files
         """
         self.io = io
         self.main_model = main_model
@@ -64,6 +70,9 @@ class RepoMap:
         self.verbose = verbose
         self.debug = debug
         self.disable_splitting = disable_splitting
+        self.skip_tests = skip_tests
+        self.skip_docs = skip_docs
+        self.skip_git = skip_git
         
         # Enforce minimum token size
         self.max_map_tokens = max(map_tokens, MIN_TOKEN_SIZE) if map_tokens else MIN_TOKEN_SIZE
@@ -77,11 +86,22 @@ class RepoMap:
         # Calculate default map size if not specified
         if not map_tokens:
             # Count files to estimate a good default
-            file_count = len(find_src_files(self.root))
+            file_count = len(find_src_files(
+                self.root,
+                skip_tests=skip_tests,
+                skip_docs=skip_docs,
+                skip_git=skip_git
+            ))
             self.max_map_tokens = max(MIN_TOKEN_SIZE, file_count * FILE_COUNT_MULTIPLIER)
         
         if verbose:
             io.tool_output(f"RepoMap initialized with map_mul_no_files: {FILE_COUNT_MULTIPLIER}")
+            if skip_tests:
+                io.tool_output("Skipping test files and directories")
+            if skip_docs:
+                io.tool_output("Skipping documentation files")
+            if skip_git:
+                io.tool_output("Skipping git-related files")
     
     def token_count(self, text: str) -> int:
         """Count tokens in a string."""
@@ -159,6 +179,9 @@ class RepoMap:
             mentioned_fnames=mentioned_fnames,
             mentioned_idents=mentioned_idents,
             token_counter=self.token_count,
+            skip_tests=self.skip_tests,
+            skip_docs=self.skip_docs,
+            skip_git=self.skip_git,
         )
         
         # For tests, add special elements

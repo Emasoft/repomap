@@ -29,30 +29,100 @@ def get_mtime(fname: str) -> float:
         return 0.0
 
 
-def find_src_files(root: str, ignore_patterns: List[str] = None) -> List[str]:
-    """Find all source files in the repository."""
+def find_src_files(
+    root: str, 
+    ignore_patterns: List[str] = None,
+    skip_tests: bool = False,
+    skip_docs: bool = False,
+    skip_git: bool = False
+) -> List[str]:
+    """
+    Find all source files in the repository.
+    
+    Args:
+        root: Root directory to search
+        ignore_patterns: Patterns of files/directories to ignore
+        skip_tests: Whether to skip test files and directories
+        skip_docs: Whether to skip documentation files
+        skip_git: Whether to skip git-related files
+        
+    Returns:
+        List of file paths
+    """
+    from .config import DEFAULT_IGNORE, TEST_PATTERNS, DOC_PATTERNS, GIT_PATTERNS
+    
     if ignore_patterns is None:
-        ignore_patterns = DEFAULT_IGNORE
+        ignore_patterns = list(DEFAULT_IGNORE)
+    else:
+        ignore_patterns = list(ignore_patterns)
+    
+    # Add additional patterns based on skip options
+    if skip_tests:
+        ignore_patterns.extend(TEST_PATTERNS)
+    if skip_docs:
+        ignore_patterns.extend(DOC_PATTERNS)
+    if skip_git:
+        ignore_patterns.extend(GIT_PATTERNS)
         
     result = []
     
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         # Filter directories using ignore patterns
         dirnames[:] = [d for d in dirnames if not any(
-            fnmatch.fnmatch(d, pat) or fnmatch.fnmatch(os.path.join(dirpath, d), pat)
+            _is_match(os.path.join(dirpath, d), d, pat, root) 
             for pat in ignore_patterns
         )]
         
         # Filter files using ignore patterns
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
-            rel_path = os.path.relpath(filepath, root)
             
-            if not any(fnmatch.fnmatch(filename, pat) or fnmatch.fnmatch(rel_path, pat) 
-                      for pat in ignore_patterns):
+            if not any(_is_match(filepath, filename, pat, root) for pat in ignore_patterns):
                 result.append(filepath)
     
     return result
+
+
+def _is_match(filepath: str, filename: str, pattern: str, root: str) -> bool:
+    """
+    Check if a file matches a pattern.
+    
+    Handles both simple patterns and glob patterns with ** for directory traversal.
+    
+    Args:
+        filepath: Full path to the file
+        filename: Just the filename
+        pattern: Pattern to match against
+        root: Root directory for relative path calculations
+        
+    Returns:
+        True if the file matches the pattern
+    """
+    # Get relative path for pattern matching
+    rel_path = os.path.relpath(filepath, root)
+    
+    # Simple filename match
+    if fnmatch.fnmatch(filename, pattern):
+        return True
+        
+    # Simple relative path match
+    if fnmatch.fnmatch(rel_path, pattern):
+        return True
+        
+    # Handle ** patterns with Path's glob support
+    if '**' in pattern:
+        try:
+            root_path = Path(root)
+            pattern_path = root_path / pattern
+            file_path = Path(filepath)
+            
+            # Check if this file would be matched by the pattern
+            return file_path.match(pattern) or any(p == file_path for p in root_path.glob(pattern))
+        except (ValueError, TypeError):
+            # Fall back to simple matching if glob fails
+            return False
+            
+    return False
 
 
 def expand_globs(patterns: List[str], root: str = None) -> List[str]:

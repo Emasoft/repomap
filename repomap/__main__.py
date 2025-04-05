@@ -34,6 +34,15 @@ def main():
     parser.add_argument(
         "--no-splitting", action="store_true", help="Disable map splitting"
     )
+    parser.add_argument(
+        "--skip-tests", action="store_true", help="Skip test files and directories"
+    )
+    parser.add_argument(
+        "--skip-docs", action="store_true", help="Skip documentation files"
+    )
+    parser.add_argument(
+        "--skip-git", action="store_true", help="Skip git-related files and directories"
+    )
     args = parser.parse_args()
 
     io = InputOutput(quiet=not args.verbose)
@@ -58,7 +67,10 @@ def main():
         verbose=args.verbose,
         debug=args.debug,
         map_tokens=args.tokens,
-        disable_splitting=args.no_splitting
+        disable_splitting=args.no_splitting,
+        skip_tests=args.skip_tests,
+        skip_docs=args.skip_docs,
+        skip_git=args.skip_git
     )
     
     expanded_files = []
