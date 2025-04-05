@@ -2,9 +2,9 @@ name: Python CI
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master, dev, release ]
   pull_request:
-    branches: [ master, release ]
+    branches: [ master, dev, release ]
 
 jobs:
   test:
@@ -41,7 +41,7 @@ jobs:
 
     - name: Install tree-sitter queries
       run: |
-        python install_queries.py
+        python -m repomap.install_queries
       timeout-minutes: 3
 
     - name: Lint with ruff

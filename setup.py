@@ -20,7 +20,7 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     url='https://github.com/Emasoft/repomap',
-    license='MIT',
+    license='Apache-2.0',
     author='Emasoft',
     author_email='713559+Emasoft@users.noreply.github.com',
     description='A tool for mapping and visualizing code repositories',
@@ -31,7 +31,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
