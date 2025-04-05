@@ -1,6 +1,8 @@
 # RepoMap specific
 .repomap*
 .repomap.tags.cache.*
+.repomap.tags.cache.*/*.db
+.temp/
 tmp/
 tmp_repos/
 textual/
@@ -15,6 +17,8 @@ test_results_*.md
 coverage_summary.md
 test_infrastructure_status.md
 repomap/output/repomap_tmp*
+temp_*
+**/temp_*
 
 # Keep .design folder and CLAUDE.md
 !.design/

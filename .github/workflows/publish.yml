@@ -50,7 +50,7 @@ jobs:
       - name: Run tests and coverage
         run: |
           python -m pytest tests/ --cov=repomap
-          coverage report --fail-under=40
+          coverage report --fail-under=80
           
       - name: Lint with ruff
         run: |
@@ -104,4 +104,4 @@ jobs:
       - name: Push changes (if workflow_dispatch)
         if: github.event_name == 'workflow_dispatch' && success()
         run: |
-          git push origin HEAD:master --tags
+          git push origin HEAD:release --tags
