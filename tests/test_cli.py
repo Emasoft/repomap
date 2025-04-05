@@ -15,6 +15,8 @@ import tempfile
 # Make sure we can import the main package
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from repomap import main as repomap_main
+from repomap.io_utils import InputOutput
+from repomap.modules.core import RepoMap
 
 # Define test constants
 SAMPLES_DIR = Path(__file__).parent.parent / "samples"
