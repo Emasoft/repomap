@@ -59,7 +59,7 @@ jobs:
     - name: Test with pytest
       run: |
         python -m coverage run -m pytest tests/
-        coverage report --fail-under=40
+        coverage report --fail-under=80
         coverage xml
 
     - name: Upload coverage to Codecov
