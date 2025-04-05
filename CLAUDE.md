@@ -259,6 +259,14 @@ git branch -M main
 git push -u origin main
 ```
 
+### Rules when using git
+- Always add temporary, cache, git, ide configuration dot files, bin and intermediate files, and mac system files to the gitignore
+- Always add to git tracking all files (excluding those in .gitignore)
+- Always run `git stash --include-untracked` before switching branch
+- Always make sure that the untracked files are copied to all branches
+- Commit the changes often, even if small. 
+- At every commit delete temporary scripts once they have been used successfully to edit the code or changing the project structure, so to avoid cluttering the repo. But be wary of not deleting scripts that are still useful.
+
 ---
 
 ## Generate Tokens and Configure GitHub Secrets
