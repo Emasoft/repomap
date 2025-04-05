@@ -8,12 +8,15 @@ import sys
 import unittest
 import subprocess
 from pathlib import Path
+from unittest import mock
 from unittest.mock import patch
 import tempfile
 
 # Make sure we can import the main package
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from repomap import main as repomap_main
+from repomap.io_utils import InputOutput
+from repomap.modules.core import RepoMap
 
 # Define test constants
 SAMPLES_DIR = Path(__file__).parent.parent / "samples"
@@ -42,6 +45,11 @@ class TestCLI(unittest.TestCase):
         self.assertIn("--verbose", result.stdout)
         self.assertIn("--tokens", result.stdout)
         self.assertIn("--debug", result.stdout)
+        
+        # Check for new skip options
+        self.assertIn("--skip-tests", result.stdout)
+        self.assertIn("--skip-docs", result.stdout)
+        self.assertIn("--skip-git", result.stdout)
 
     def test_cli_debug(self):
         """Test CLI debug output"""
@@ -86,6 +94,63 @@ class TestCLI(unittest.TestCase):
     def test_output_file(self):
         """Test CLI with output redirection"""
         self.skipTest("Skipping CLI test due to environment limitations")
+        
+    def test_skip_options(self):
+        """Test the skip options for filtering files"""
+        # Create a temporary directory for testing
+        temp_dir = tempfile.TemporaryDirectory()
+        test_dir_path = Path(temp_dir.name)
+        
+        # Create test files
+        (test_dir_path / "main.py").write_text("def main(): pass")
+        (test_dir_path / "test_main.py").write_text("def test_main(): pass")
+        (test_dir_path / "README.md").write_text("# Documentation")
+        (test_dir_path / ".git").mkdir(exist_ok=True)
+        (test_dir_path / ".git" / "config").write_text("[core]")
+        
+        try:
+            # Create a RepoMap instance with mock IO
+            mock_io = mock.MagicMock(spec=InputOutput)
+            
+            # Test without skip options - should find all files except .git directory
+            rm_all = RepoMap(io=mock_io, root=str(test_dir_path))
+            from repomap.modules.file_utils import find_src_files
+            all_files = find_src_files(str(test_dir_path))
+            # Should find at least main.py, test_main.py, README.md
+            self.assertTrue(any("main.py" in f for f in all_files))
+            self.assertTrue(any("test_main.py" in f for f in all_files))
+            self.assertTrue(any("README.md" in f for f in all_files))
+            
+            # Test with skip_tests=True
+            test_files = find_src_files(str(test_dir_path), skip_tests=True)
+            # Should find main.py and README.md but not test_main.py
+            self.assertTrue(any("main.py" in f for f in test_files))
+            self.assertFalse(any("test_main.py" in f for f in test_files))
+            self.assertTrue(any("README.md" in f for f in test_files))
+            
+            # Test with skip_docs=True
+            doc_files = find_src_files(str(test_dir_path), skip_docs=True)
+            # Should find main.py and test_main.py but not README.md
+            self.assertTrue(any("main.py" in f for f in doc_files))
+            self.assertTrue(any("test_main.py" in f for f in doc_files))
+            self.assertFalse(any("README.md" in f for f in doc_files))
+            
+            # Test with all skip options
+            no_files = find_src_files(
+                str(test_dir_path), 
+                skip_tests=True, 
+                skip_docs=True, 
+                skip_git=True
+            )
+            # Should find only main.py
+            self.assertTrue(any("main.py" in f for f in no_files))
+            self.assertFalse(any("test_main.py" in f for f in no_files))
+            self.assertFalse(any("README.md" in f for f in no_files))
+            self.assertFalse(any(".git" in f for f in no_files))
+            
+        finally:
+            # Clean up
+            temp_dir.cleanup()
 
 
 if __name__ == '__main__':

@@ -18,7 +18,31 @@ MIN_TOKEN_SIZE = 4096
 DEFAULT_IGNORE = [
     '.git', '.hg', '.svn', '.DS_Store', 
     'node_modules', 'venv', '.venv', '__pycache__', 
-    '*.pyc', '.repomap.tags.cache*'
+    '*.pyc', '.repomap.tags.cache*',
+    '.temp', 'temp_*', '**/temp_*'
+]
+
+# Patterns for test files and directories
+TEST_PATTERNS = [
+    '**/test_*.py', '**/tests/**', '**/test/**', '**/testing/**',
+    '**/*_test.py', '**/*_test.js', '**/*_test.ts', 
+    '**/*.test.js', '**/*.test.ts', '**/*.spec.js', '**/*.spec.ts',
+    '**/jest.config.js', '**/pytest.ini', '**/conftest.py',
+    '**/unittest/**', '**/jasmine/**', '**/karma.conf.js'
+]
+
+# Patterns for documentation files and directories
+DOC_PATTERNS = [
+    '**/docs/**', '**/doc/**', '**/documentation/**',
+    '**/*.md', '**/*.rst', '**/*.txt', '**/man/**',
+    '**/examples/**', '**/README*', '**/CHANGELOG*', 
+    '**/LICENSE*', '**/CONTRIBUTING*'
+]
+
+# Patterns for git-related files and directories
+GIT_PATTERNS = [
+    '**/.git/**', '**/.github/**', '**/.gitignore', '**/.gitattributes',
+    '**/.gitmodules', '**/CODEOWNERS'
 ]
 
 # Language to file extension mappings
