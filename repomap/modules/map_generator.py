@@ -31,6 +31,9 @@ def get_ranked_tags_map_uncached(
     mentioned_fnames: Set[str] = None,
     mentioned_idents: Set[str] = None,
     token_counter = None,
+    skip_tests: bool = False,
+    skip_docs: bool = False,
+    skip_git: bool = False,
 ) -> Tuple[str, List[str]]:
     """
     Generate a repository map from files.
