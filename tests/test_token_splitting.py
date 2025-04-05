@@ -19,8 +19,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from repomap import RepoMap
 from repomap.utils import ChdirTemporaryDirectory
-from io_utils import default_io
-from models import get_token_counter
+from repomap.io_utils import default_io
+from repomap.models import get_token_counter
 
 
 class TestHelpers:

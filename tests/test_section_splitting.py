@@ -24,7 +24,7 @@ from repomap.section_splitting import (
     handle_large_section
 )
 from repomap.utils import ChdirTemporaryDirectory
-from io_utils import default_io
+from repomap.io_utils import default_io
 
 
 class MockIO:
