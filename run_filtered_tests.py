@@ -1,1 +1,1 @@
-tests/runners/run_filtered_tests.py
+scripts/run_filtered_tests.py
