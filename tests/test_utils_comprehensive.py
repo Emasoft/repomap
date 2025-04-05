@@ -108,8 +108,9 @@ class TestTemporaryDirectories:
                 mock_chdir.assert_called_with(Path(temp_dir).resolve())
             
             # After context, chdir should attempt to go back to original directory
-            # but since it was None, it shouldn't try to change back
-            assert mock_chdir.call_count == 1
+            # The implementation now tries to go back to home directory as fallback
+            # So we expect 2 calls: one to temp dir, one back to original dir
+            assert mock_chdir.call_count == 2
 
 
 class TestFileUtilities:
@@ -319,17 +320,29 @@ class TestInstallationFunctions:
         for arg in args:
             assert arg in cmd
     
-    def test_run_install(self):
+    @mock.patch('subprocess.Popen')
+    def test_run_install(self, mock_popen):
         """Test run_install function."""
-        # In test mode, run_install returns success directly
+        # Mock successful installation
+        mock_process = mock.MagicMock()
+        mock_process.stdout.read.side_effect = ['I', 'n', 's', 't', 'a', 'l', 'l', 'i', 'n', 'g', '', '']
+        mock_process.wait.return_value = 0
+        mock_popen.return_value = mock_process
+        
+        # Test successful installation
         success, output = run_install(["pip", "install", "package"])
         
         assert success is True
-        assert "Test environment" in output
+        assert "Installing" in output
     
-    def test_check_pip_install_extra(self):
+    @mock.patch('repomap.utils.run_install')
+    def test_check_pip_install_extra(self, mock_run_install):
         """Test check_pip_install_extra function."""
         mock_io = mock.MagicMock()
+        mock_io.confirm_ask.return_value = True
+        
+        # Mock successful installation
+        mock_run_install.return_value = (True, "Installation successful")
         
         # Test when module is already installed
         with mock.patch.dict(sys.modules, {"existing_module": mock.MagicMock()}):
@@ -338,10 +351,14 @@ class TestInstallationFunctions:
             # Verify no prompt was shown
             mock_io.tool_warning.assert_not_called()
         
-        # In test mode, check_pip_install_extra returns True directly
-        result = check_pip_install_extra(mock_io, "non_existent_module", "Need to install", ["package"])
-        assert result is True
-        mock_io.tool_warning.assert_called_with("Need to install")
+        # Test when module needs to be installed
+        with mock.patch.dict(sys.modules, {}):
+            # Mock the import to succeed after installation
+            with mock.patch('builtins.__import__', side_effect=[ImportError, mock.MagicMock()]):
+                result = check_pip_install_extra(mock_io, "non_existent_module", "Need to install", ["package"])
+                assert result is True
+                mock_io.tool_warning.assert_called_with("Need to install")
+                mock_run_install.assert_called_once()
 
 
 class TestSpinner:
