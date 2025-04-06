@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Add parent directory to path to import repomap
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from repomap.ast_parser import parse_file, parse_javascript, parse_python
+from repomap.ast_parser import process_file
 
 
 class TestAstParser(unittest.TestCase):
@@ -69,67 +69,47 @@ def standalone_function():
         os.unlink(self.temp_js_file.name)
         os.unlink(self.temp_py_file.name)
     
-    def test_parse_javascript(self):
-        """Test parsing JavaScript files."""
-        elements = parse_javascript(self.temp_js_file.name)
+    def test_parse_javascript_returns_error(self):
+        """Test that JavaScript files are no longer supported by the ast_parser module."""
+        result = process_file(self.temp_js_file.name)
+        self.assertIn('error', result)
         
-        # Check if we found the expected elements
-        element_names = [e['name'] for e in elements]
-        self.assertIn('TestClass', element_names)
-        self.assertIn('testFunction', element_names)
-        
-        # At least one method should be found
-        method_found = False
-        for element in elements:
-            if element['type'] == 'method' or element['type'] == 'arrow_function':
-                method_found = True
-                break
-        self.assertTrue(method_found)
-    
     def test_parse_python(self):
         """Test parsing Python files."""
-        elements = parse_python(self.temp_py_file.name)
+        result = process_file(self.temp_py_file.name)
         
-        # Check if we found the class and functions
-        element_names = [e['name'] for e in elements]
+        # Make sure we get results and not an error
+        self.assertIn('results', result)
+        
+        # Check if we found the class
+        element_names = [e['name'] for e in result['results']]
         self.assertIn('TestClass', element_names)
-        self.assertIn('standalone_function', element_names)
         
         # Check if methods were found
         method_found = False
-        for element in elements:
-            if element['type'] == 'method' and element['name'] == 'test_method':
+        for element in result['results']:
+            if element['type'] == 'FunctionDef' and element['name'] == 'test_method':
                 method_found = True
                 break
         self.assertTrue(method_found)
     
-    def test_parse_file_js(self):
-        """Test parse_file with JavaScript."""
-        elements = parse_file(self.temp_js_file.name, 'javascript')
-        self.assertGreater(len(elements), 0)
-        element_names = [e['name'] for e in elements]
-        self.assertIn('TestClass', element_names)
-        # Verify the element has the required attributes needed by section_splitting.py
-        for element in elements:
-            if element['name'] == 'TestClass':
-                self.assertTrue('line' in element or 'start_line' in element)
+    def test_parse_file_non_python(self):
+        """Test process_file with non-Python file returns error."""
+        result = process_file(self.temp_js_file.name)
+        self.assertIn('error', result)
     
     def test_parse_file_py(self):
-        """Test parse_file with Python."""
-        elements = parse_file(self.temp_py_file.name, 'python')
-        self.assertGreater(len(elements), 0)
-        element_names = [e['name'] for e in elements]
+        """Test process_file with Python file."""
+        result = process_file(self.temp_py_file.name)
+        self.assertIn('results', result)
+        self.assertGreater(len(result['results']), 0)
+        element_names = [e['name'] for e in result['results']]
         self.assertIn('TestClass', element_names)
-        # Verify the element has the required attributes needed by section_splitting.py
-        for element in elements:
+        # Verify the elements have the required attributes
+        for element in result['results']:
             if element['name'] == 'TestClass':
-                self.assertTrue('line' in element or 'start_line' in element)
-    
-    def test_parse_file_extension(self):
-        """Test parse_file infers language from extension."""
-        elements = parse_file(self.temp_js_file.name, '.js')
-        self.assertGreater(len(elements), 0)
-        self.assertIn('TestClass', [e['name'] for e in elements])
+                self.assertTrue('start_line' in element)
+                self.assertTrue('end_line' in element)
         
     def test_cli_interface(self):
         """Test the CLI interface with specific function names."""

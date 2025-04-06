@@ -49,7 +49,7 @@ def find_src_files(
     Returns:
         List of file paths
     """
-    from .config import DEFAULT_IGNORE, TEST_PATTERNS, DOC_PATTERNS, GIT_PATTERNS
+    from .config import TEST_PATTERNS, DOC_PATTERNS, GIT_PATTERNS
     
     if ignore_patterns is None:
         ignore_patterns = list(DEFAULT_IGNORE)

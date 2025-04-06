@@ -71,7 +71,7 @@ def filename_to_lang(filename):
 
 # New modular exports
 # Import specific utilities from modules
-from .modules.models import TreeNode, Tag
+from .modules.models import TreeNode
 from .modules.file_utils import (
     get_rel_fname, get_mtime, find_src_files,
     expand_globs, find_common_root, is_text_file,
