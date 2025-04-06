@@ -16,7 +16,7 @@ Name: repomap
 - Use scripts and tools to run tests, check coverage, updates your version file, commits the changes, and creates a Git tag automatically.
 - Increments version using bumpversion
 - Automatically run the following linters before building: ruff, mypy, shellcheck
-- Project is tailored for running on mac os Sequoia with python versions from 3.9 to 3.14
+- Project is tailored for running on mac os Sequoia with python versions from 3.10 to 3.13
 
 ## Environment Setup with Conda
 
@@ -38,7 +38,7 @@ conda env list
 conda info
 
 # Create a new environment for this project
-conda create -n RepoMap python=3.9
+conda create -n RepoMap python=3.12
 
 # Activate the environment
 conda activate RepoMap
