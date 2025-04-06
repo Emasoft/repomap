@@ -100,7 +100,8 @@ def generate_symbol_map(ranked_tags: List[Tag],
     """
     if token_counter is None:
         # Default token counter (rough estimate)
-        token_counter = lambda s: len(s) // 4
+        def token_counter(s):
+            return len(s) // 4
     
     # Group tags by file
     files = defaultdict(list)

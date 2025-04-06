@@ -18,7 +18,7 @@ if os.path.exists('README.md'):
 setup(
     name='repomap',
     version='0.1.2',
-    packages=find_packages(),
+    packages=find_packages(include=['repomap', 'repomap.*']),
     url='https://github.com/Emasoft/repomap',
     license='Apache-2.0',
     author='Emasoft',

@@ -86,6 +86,9 @@ repomap --help                   # Show all options
 - If you need to examine or modify the code, create or move files and folders, prefer writing and executing quick python scripts to using shell command.
 - Write quick python scripts to do any task you need, since python is more reliable.
 - **IMPORTANT**: Always use the `repomap/ast_parser.py` script to determine the exact start and ending line of functions or classes you want to read or edit. This prevents errors caused by viewing random code sections and getting truncated functions or classes.
+- **NOTE**: The project has two main tools with different purposes:
+  1. **RepoMap (repomap.py)**: The main tool that supports **multiple languages** via tree-sitter. Use this for analyzing repositories with various programming languages.
+  2. **AST Parser (ast_parser.py)**: A specialized tool for **Python files only**. It uses Python's built-in AST module which only understands Python syntax. This tool is mainly used during development and for specific Python code analysis needs.
 - To use ast_parser effectively:
   ```bash
   # List all callable elements in a file with line numbers
