@@ -12,7 +12,7 @@ fi
 # Create conda environment if it doesn't exist
 if ! conda env list | grep -q "^$ENV_NAME "; then
     echo "Creating conda environment '$ENV_NAME'..."
-    conda create -y -n $ENV_NAME python=3.9
+    conda create -y -n $ENV_NAME python=3.12
 else
     echo "Conda environment '$ENV_NAME' already exists."
 fi

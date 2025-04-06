@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repomap"
-version = "0.1.1"
+version = "0.1.2"
 description = "A tool for mapping and visualizing code repositories"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10, <3.14"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "Emasoft", email = "713559+Emasoft@users.noreply.github.com"}
@@ -17,10 +17,10 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Documentation",
 ]
@@ -55,7 +55,7 @@ profile = "black"
 line_length = 100
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -75,7 +75,7 @@ markers = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

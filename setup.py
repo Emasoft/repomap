@@ -17,7 +17,7 @@ if os.path.exists('README.md'):
 
 setup(
     name='repomap',
-    version='0.1.1',
+    version='0.1.2',
     packages=find_packages(),
     url='https://github.com/Emasoft/repomap',
     license='Apache-2.0',
@@ -27,16 +27,16 @@ setup(
     long_description=readme,
     long_description_content_type='text/markdown',
     install_requires=requirements,
-    python_requires='>=3.8',
+    python_requires='>=3.10, <3.14',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Documentation',
     ],
