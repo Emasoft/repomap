@@ -23,7 +23,7 @@ import os
 import sys
 from pathlib import Path
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # Add constants for backwards compatibility
 CACHE_VERSION = 3
