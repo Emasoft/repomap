@@ -6,6 +6,8 @@ import os
 import re
 import glob
 import fnmatch
+import tempfile
+import subprocess
 from pathlib import Path
 from typing import List, Set, Optional, Any
 
@@ -125,6 +127,48 @@ def _is_match(filepath: str, filename: str, pattern: str, root: str) -> bool:
     return False
 
 
+def is_git_url(url: str) -> bool:
+    """Check if a string is a Git URL."""
+    git_url_patterns = [
+        r'^https?://github\.com/[\w-]+/[\w-]+$',
+        r'^https?://gitlab\.com/[\w-]+/[\w-]+$',
+        r'^https?://bitbucket\.org/[\w-]+/[\w-]+$',
+        r'^git@github\.com:[\w-]+/[\w-]+\.git$',
+        r'^git@gitlab\.com:[\w-]+/[\w-]+\.git$',
+        r'^git@bitbucket\.org:[\w-]+/[\w-]+\.git$',
+        r'^https?://github\.com/[\w-]+/[\w-]+\.git$',
+        r'^https?://gitlab\.com/[\w-]+/[\w-]+\.git$',
+        r'^https?://bitbucket\.org/[\w-]+/[\w-]+\.git$',
+    ]
+    for pattern in git_url_patterns:
+        if re.match(pattern, url):
+            return True
+    return False
+
+
+def clone_repo(url: str, target_dir: str = None) -> str:
+    """Clone a Git repository and return the path to the cloned directory."""
+    import tempfile
+    import subprocess
+    
+    if target_dir is None:
+        # Create a temporary directory for the clone
+        target_dir = tempfile.mkdtemp(prefix="repomap_clone_")
+    
+    try:
+        # Clone the repository
+        subprocess.run(
+            ["git", "clone", "--depth", "1", url, target_dir],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return target_dir
+    except subprocess.CalledProcessError as e:
+        print(f"Error cloning repository: {e}")
+        return ""
+
+
 def expand_globs(patterns: List[str], root: str = None) -> List[str]:
     """Expand glob patterns to file paths."""
     if root is None:
@@ -132,8 +176,23 @@ def expand_globs(patterns: List[str], root: str = None) -> List[str]:
         
     result = []
     for pattern in patterns:
+        # Check if the pattern is a Git URL
+        if is_git_url(pattern):
+            # Clone the repository to a temporary directory
+            print(f"Cloning repository {pattern}...")
+            repo_dir = clone_repo(pattern)
+            if repo_dir:
+                # Add all files from the cloned repository
+                for dirpath, _, filenames in os.walk(repo_dir):
+                    # Skip the .git directory
+                    if ".git" in dirpath.split(os.path.sep):
+                        continue
+                    for filename in filenames:
+                        result.append(os.path.join(dirpath, filename))
+            else:
+                print(f"Failed to clone repository {pattern}")
         # If it's a directory, add all files in it
-        if os.path.isdir(pattern):
+        elif os.path.isdir(pattern):
             for dirpath, _, filenames in os.walk(pattern):
                 for filename in filenames:
                     result.append(os.path.join(dirpath, filename))
