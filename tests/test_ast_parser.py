@@ -116,12 +116,27 @@ def standalone_function():
         import subprocess
         
         # Test with a specific function name
-        cmd = [sys.executable, self.temp_py_file.name, "TestClass"]
-        result = subprocess.run(
-            [sys.executable, os.path.join(Path(__file__).parent.parent, "repomap", "ast_parser.py"), 
-             self.temp_py_file.name, "TestClass"],
-            capture_output=True, text=True
-        )
+        try:
+            # First try to use the ast_parser directly as a script
+            ast_parser_path = Path(__file__).parent.parent / "ast_parser.py"
+            if ast_parser_path.exists():
+                result = subprocess.run(
+                    [sys.executable, str(ast_parser_path), self.temp_py_file.name, "TestClass"],
+                    capture_output=True, text=True
+                )
+            else:
+                # Fallback to the module entry point
+                result = subprocess.run(
+                    [sys.executable, os.path.join(Path(__file__).parent.parent, "repomap", "ast_parser.py"), 
+                     self.temp_py_file.name, "TestClass"],
+                    capture_output=True, text=True
+                )
+        except Exception:
+            # Last resort - use the module in package
+            result = subprocess.run(
+                [sys.executable, "-m", "repomap.ast_parser", self.temp_py_file.name, "TestClass"],
+                capture_output=True, text=True
+            )
         
         # Check if the output matches what section_splitting.py expects
         self.assertEqual(result.returncode, 0)

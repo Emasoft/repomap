@@ -46,6 +46,12 @@ setup(
             'ast_parser=repomap.ast_parser:main',
         ],
     },
+    scripts=[
+        'scripts/repomap.py',
+        'scripts/ast_parser.py',
+        'repomap.py',
+        'ast_parser.py',
+    ],
     include_package_data=True,
     package_data={
         'repomap': [

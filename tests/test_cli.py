@@ -30,12 +30,24 @@ class TestCLI(unittest.TestCase):
     def test_cli_help(self):
         """Test CLI help output"""
         # Use subprocess to run the CLI with --help
-        result = subprocess.run(
-            [sys.executable, "-m", "repomap", "--help"],
-            capture_output=True,
-            text=True,
-            check=False
-        )
+        # Try both the module approach and direct script approach
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "repomap", "--help"],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+        except Exception:
+            # Fallback to direct script approach
+            repo_root = Path(__file__).parent.parent
+            script_path = repo_root / "repomap.py"
+            result = subprocess.run(
+                [sys.executable, str(script_path), "--help"],
+                capture_output=True,
+                text=True, 
+                check=False
+            )
 
         # Check that it ran successfully
         self.assertEqual(result.returncode, 0)
@@ -54,12 +66,24 @@ class TestCLI(unittest.TestCase):
     def test_cli_debug(self):
         """Test CLI debug output"""
         # Use subprocess to run with --debug
-        result = subprocess.run(
-            [sys.executable, "-m", "repomap", "--debug", str(PYTHON_SAMPLE)],
-            capture_output=True,
-            text=True,
-            check=False
-        )
+        # Try both the module approach and direct script approach
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "repomap", "--debug", str(PYTHON_SAMPLE)],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+        except Exception:
+            # Fallback to direct script approach
+            repo_root = Path(__file__).parent.parent
+            script_path = repo_root / "repomap.py"
+            result = subprocess.run(
+                [sys.executable, str(script_path), "--debug", str(PYTHON_SAMPLE)],
+                capture_output=True,
+                text=True,
+                check=False
+            )
 
         # Check that it ran successfully (should return 1 because of no repo map)
         # We're just checking the debug output works
