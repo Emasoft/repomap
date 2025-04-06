@@ -8,6 +8,7 @@ import argparse
 from pathlib import Path
 
 from .modules.core import RepoMap
+from .modules.file_utils import expand_globs
 from .io_utils import InputOutput
 
 def main():
@@ -75,7 +76,7 @@ def main():
     
     expanded_files = []
     for pattern in args.files:
-        expanded_files.extend(repo_map.expand_globs(pattern))
+        expanded_files.extend(expand_globs([pattern], root=repo_map.root))
     
     if not expanded_files:
         print(f"Error: No files found matching: {', '.join(args.files)}")
