@@ -43,6 +43,7 @@ setup(
     entry_points={
         'console_scripts': [
             'repomap=repomap:main',
+            'ast_parser=repomap.ast_parser:main',
         ],
     },
     include_package_data=True,

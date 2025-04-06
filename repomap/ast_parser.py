@@ -498,22 +498,22 @@ def main():
         epilog="""
 Examples:
   Find a specific function:
-    ast_parser.py myfile.py function_name
+    python-ast-parser myfile.py function_name
   
   Find all callable elements:
-    ast_parser.py myfile.py "*" 
+    python-ast-parser myfile.py "*" 
   
   Get the source code of a class with line numbers:
-    ast_parser.py myfile.py MyClass --get-code --add-line-numbers
+    python-ast-parser myfile.py MyClass --get-code --add-line-numbers
   
   Find all elements (callable and non-callable) with 5 lines of context:
-    ast_parser.py myfile.py "*" --non-callables --get-code --add-context 5
+    python-ast-parser myfile.py "*" --non-callables --get-code --add-context 5
   
   Get only function/class signatures including decorators:
-    ast_parser.py myfile.py "*" --signature-only
+    python-ast-parser myfile.py "*" --signature-only
   
   Get a compact listing of all callable elements:
-    ast_parser.py myfile.py "*" --line-numbers-only
+    python-ast-parser myfile.py "*" --line-numbers-only
 """
     )
     
@@ -583,7 +583,9 @@ Examples:
             for node in results['results']:
                 if node.get('is_callable', True) and node['name'] == sys.argv[2]:
                     print(f"Found Callable '{node['name']}' at lines {node['start_line']}-{node['end_line']}")
-                    sys.exit(0)
+                    return 0
+    
+    return 0
 
 
 if __name__ == "__main__":
@@ -609,4 +611,4 @@ if __name__ == "__main__":
             sys.exit(1)
     else:
         # Use the modern argparse interface
-        main()
+        sys.exit(main())
