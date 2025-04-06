@@ -6,19 +6,32 @@
 tmp/
 tmp_repos/
 textual/
+output/
 output/*
 !output/.gitkeep
+repomap/output/
+repomap/output/*
+!repomap/output/.gitkeep
 coverage_html_report/
+coverage_html_report/*
 tests/coverage/
+tests/coverage/*
 test_results_*.md
+coverage_summary.md
+test_infrastructure_status.md
 *.bak
 *.bak2
 *.original_backup
-coverage_summary.md
-test_infrastructure_status.md
-repomap/output/repomap_tmp*
 temp_*
 **/temp_*
+bin/
+
+# Keep test files for all languages
+!tests/fixtures/languages/**/*
+!tests/fixtures/sample-code-base/**/*
+!tests/fixtures/watch*
+!tests/data/test*
+!tests/samples/**/*
 
 # Keep .design folder and CLAUDE.md
 !.design/

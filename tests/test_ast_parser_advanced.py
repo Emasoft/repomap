@@ -220,7 +220,13 @@ if __name__ == "__main__":
 """)
 
         # Path to the ast_parser.py script
-        self.ast_parser_path = Path(__file__).parent.parent / "ast_parser.py"
+        # Try different possible locations
+        ast_parser_path = Path(__file__).parent.parent / "ast_parser.py"
+        if ast_parser_path.exists():
+            self.ast_parser_path = ast_parser_path
+        else:
+            # Fallback to module path
+            self.ast_parser_path = Path(__file__).parent.parent / "repomap" / "ast_parser.py"
     
     def tearDown(self):
         """Clean up test fixtures."""
@@ -396,12 +402,22 @@ if __name__ == "__main__":
         
     def run_ast_parser(self, *args):
         """Run the ast_parser.py script with the given arguments."""
-        cmd = [sys.executable, str(self.ast_parser_path), str(self.test_file_path)] + list(args)
-        result = subprocess.run(cmd, 
-                               capture_output=True, 
-                               text=True,
-                               check=False)
-        return result
+        try:
+            # First try with direct script
+            cmd = [sys.executable, str(self.ast_parser_path), str(self.test_file_path)] + list(args)
+            result = subprocess.run(cmd, 
+                                   capture_output=True, 
+                                   text=True,
+                                   check=False)
+            return result
+        except Exception:
+            # Fallback to module import
+            cmd = [sys.executable, "-m", "repomap.ast_parser", str(self.test_file_path)] + list(args)
+            result = subprocess.run(cmd, 
+                                   capture_output=True, 
+                                   text=True, 
+                                   check=False)
+            return result
         
     def test_cli_pattern_matching_advanced(self):
         """Test pattern matching for advanced constructs."""
@@ -434,7 +450,14 @@ class TestAstParserEdgeCases(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.TemporaryDirectory()
-        self.ast_parser_path = Path(__file__).parent.parent / "ast_parser.py"
+        # Path to the ast_parser.py script
+        # Try different possible locations
+        ast_parser_path = Path(__file__).parent.parent / "ast_parser.py"
+        if ast_parser_path.exists():
+            self.ast_parser_path = ast_parser_path
+        else:
+            # Fallback to module path
+            self.ast_parser_path = Path(__file__).parent.parent / "repomap" / "ast_parser.py"
         
     def tearDown(self):
         """Clean up test fixtures."""
@@ -479,12 +502,22 @@ class TestAstParserEdgeCases(unittest.TestCase):
         
     def run_ast_parser(self, file_path, *args):
         """Run the ast_parser.py script with the given arguments."""
-        cmd = [sys.executable, str(self.ast_parser_path), str(file_path)] + list(args)
-        result = subprocess.run(cmd, 
-                               capture_output=True, 
-                               text=True,
-                               check=False)
-        return result
+        try:
+            # First try with direct script
+            cmd = [sys.executable, str(self.ast_parser_path), str(file_path)] + list(args)
+            result = subprocess.run(cmd, 
+                                   capture_output=True, 
+                                   text=True,
+                                   check=False)
+            return result
+        except Exception:
+            # Fallback to module import
+            cmd = [sys.executable, "-m", "repomap.ast_parser", str(file_path)] + list(args)
+            result = subprocess.run(cmd, 
+                                   capture_output=True, 
+                                   text=True, 
+                                   check=False)
+            return result
         
     def test_cli_error_handling(self):
         """Test CLI error handling."""
