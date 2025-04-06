@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 # Make sure we can import the main package
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils import (
+from repomap.utils import (
     is_image_file, Spinner, safe_abs_path, format_tokens,
     IgnorantTemporaryDirectory, ChdirTemporaryDirectory
 )

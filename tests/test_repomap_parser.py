@@ -7,11 +7,11 @@ from pathlib import Path
 
 import git
 
-from dump import dump  # noqa: F401
-from io_utils import InputOutput
-from models import Model
-from repomap import RepoMap
-from utils import GitTemporaryDirectory, IgnorantTemporaryDirectory
+from repomap.dump import dump  # noqa: F401
+from repomap.io_utils import InputOutput
+from repomap.models import Model
+from repomap.modules.core import RepoMap
+from repomap.utils import IgnorantTemporaryDirectory
 
 
 class TestRepoMap(unittest.TestCase):

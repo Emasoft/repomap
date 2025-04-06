@@ -8,14 +8,13 @@ version = "0.1.2"
 description = "A tool for mapping and visualizing code repositories"
 readme = "README.md"
 requires-python = ">=3.10, <3.14"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [
     {name = "Emasoft", email = "713559+Emasoft@users.noreply.github.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -45,6 +44,7 @@ Issues = "https://github.com/Emasoft/repomap/issues"
 
 [project.scripts]
 repomap = "repomap:main"
+ast_parser = "repomap.ast_parser:main"
 
 [tool.black]
 line-length = 100

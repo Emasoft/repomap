@@ -31,7 +31,7 @@ from pathlib import Path
 
 # Add parent directory to path to import repomap
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from repomap import RepoMap
+from repomap.modules.core import RepoMap
 from repomap.utils import ChdirTemporaryDirectory
 from repomap.io_utils import default_io
 from repomap.models import get_token_counter

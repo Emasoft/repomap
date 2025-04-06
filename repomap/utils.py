@@ -9,7 +9,7 @@ import time
 import shutil
 from pathlib import Path
 
-from dump import dump  # noqa: F401
+from repomap.dump import dump  # noqa: F401
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".webp", ".pdf"}
 

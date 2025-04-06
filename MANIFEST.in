@@ -5,13 +5,22 @@ include pyproject.toml
 include setup.py
 include setup.cfg
 
-# Include the query files
-recursive-include repomap/queries *.scm
+# Include the query files and their __init__.py files
+recursive-include repomap/queries *.scm *.py
 recursive-include queries *.scm
 
 # Include Python type hints
 include py.typed
 include repomap/py.typed
+
+# Include NOTICE file
+include NOTICE
+
+# Include scripts
+include repomap.py
+include ast_parser.py
+include scripts/repomap.py
+include scripts/ast_parser.py
 
 # Exclude unnecessary files
 exclude .gitignore
